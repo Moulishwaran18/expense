@@ -1,0 +1,90 @@
+import java.io.*;
+import java.util.*;
+
+public class ExpenseTracker {
+    private static final String FILE_NAME = "expenses.dat";
+    private List<Expense> expenses;
+    private Scanner scanner;
+
+    public ExpenseTracker() {
+        expenses = loadExpenses();
+        scanner = new Scanner(System.in);
+    }
+
+    public void addExpense() {
+        System.out.print("Enter expense category: ");
+        String category = scanner.nextLine();
+        System.out.print("Enter amount: ₹");
+        double amount = scanner.nextDouble();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter description: ");
+        String description = scanner.nextLine();
+
+        Expense expense = new Expense(category, amount, description);
+        expenses.add(expense);
+        saveExpenses();
+        System.out.println("Expense added successfully!");
+    }
+
+    public void viewExpenses() {
+        if (expenses.isEmpty()) {
+            System.out.println("No expenses recorded.");
+        } else {
+            System.out.println("\nYour Expenses:");
+            for (Expense expense : expenses) {
+                System.out.println(expense);
+            }
+        }
+    }
+
+    private List<Expense> loadExpenses() {
+        List<Expense> expenseList = new ArrayList<>();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
+            expenseList = (List<Expense>) ois.readObject();
+        } catch (FileNotFoundException e) {
+            System.out.println("No previous data found, starting fresh.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading expenses: " + e.getMessage());
+        }
+        return expenseList;
+    }
+
+    private void saveExpenses() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            oos.writeObject(expenses);
+        } catch (IOException e) {
+            System.out.println("Error saving expenses: " + e.getMessage());
+        }
+    }
+
+    public void showMenu() {
+        while (true) {
+            System.out.println("\nStudent Expense Tracker");
+            System.out.println("1. Add Expense");
+            System.out.println("2. View Expenses");
+            System.out.println("3. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    addExpense();
+                    break;
+                case 2:
+                    viewExpenses();
+                    break;
+                case 3:
+                    System.out.println("Exiting...");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        ExpenseTracker tracker = new ExpenseTracker();
+        tracker.showMenu();
+    }
+}
